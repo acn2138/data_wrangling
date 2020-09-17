@@ -1,14 +1,11 @@
 ---
-title: "Simple document"
+title: "Data Wrangling"
 output: html_document
 ---
 
-I'm an R Markdown document! 
+Classwork:
 
-# Section 1
-
-Here's a **code chunk** that samples from 
-a _normal distribution_:
+# Data wrangling  1
 
 ```{r}
 library(tidyverse)
@@ -46,13 +43,44 @@ mlb11_data = read_excel("data_import_examples/mlb11.xlsx", n_max = 20)
 head(mlb11_data, 5)
 
 library(haven)
-pulse_data = read_sas("./data/public_pulse_data.sas7bdat")
+pulse_data = read_sas("./data_import_examples/public_pulse_data.sas7bdat")
 head(pulse_data, 5)
 
 #write_* can be used to export data in different forms
+
 ```
 
-# Section 2
+# Data wrangling II
 
-I can take the mean of the sample, too!
-The mean is `r mean(samp)`.
+
+```{r}
+litters_data = read_csv(file = "./data_import_examples/FAS_litters.csv")
+
+litters_data = janitor::clean_names(litters_data)
+
+options(tibble.print_min = 3)
+skinny_litter = select(litters_data, group:gd_of_birth)
+
+litters_2 = select(litters_data, -pups_survive, GROUP = group)
+
+#select_helpers find columns with specified parts
+litters_different = select(litters_data, litter_number, pups_survive, everything())
+#everything() keeps all but let you rearrange
+
+#relocate and rename can be used instead of select
+
+mutate(litters_data, wt_gain = gd18_weight - gd0_weight, group = str_to_lower(group))
+
+#arrange is a form of sort
+#relocate is for columns, arrange is for sorting rows
+
+head(arrange(litters_data, group, pups_born_alive), 10)
+
+#using piping makes code like a sas datastep
+litters_data = 
+  read_csv("./data_import_examples/FAS_litters.csv", col_types = "ccddiiii") %>%
+  janitor::clean_names() %>%
+  select(-pups_survive) %>%
+  mutate( wt_gain = gd18_weight - gd0_weight, group = str_to_lower(group)) %>% 
+  drop_na(wt_gain)
+```
